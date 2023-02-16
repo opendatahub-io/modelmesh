@@ -61,6 +61,12 @@ import com.ibm.watson.modelmesh.ModelRecord.FailureInfo;
 import com.ibm.watson.modelmesh.TypeConstraintManager.ProhibitedTypeSet;
 import com.ibm.watson.modelmesh.clhm.ConcurrentLinkedHashMap;
 import com.ibm.watson.modelmesh.clhm.ConcurrentLinkedHashMap.EvictionListenerWithTime;
+import com.ibm.watson.modelmesh.processor.AsyncPayloadProcessor;
+import com.ibm.watson.modelmesh.processor.CompositePayloadProcessor;
+import com.ibm.watson.modelmesh.processor.LoggingPayloadProcessor;
+import com.ibm.watson.modelmesh.processor.MatchingPayloadProcessor;
+import com.ibm.watson.modelmesh.processor.Payload;
+import com.ibm.watson.modelmesh.processor.PayloadProcessor;
 import com.ibm.watson.modelmesh.thrift.ApplierException;
 import com.ibm.watson.modelmesh.thrift.BaseModelMeshService;
 import com.ibm.watson.modelmesh.thrift.InternalException;
@@ -101,6 +107,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -419,6 +426,37 @@ public abstract class ModelMesh extends ThriftService
             throw new NumberFormatException(
                     PRESTOP_SERVER_PORT_ENV_VAR + " is not a valid port number: " + preStopPort);
         }
+    }
+
+    private static Map<String, PayloadProcessor> registeredProcessors = new HashMap<>();
+
+    static {
+        PayloadProcessor logger = new LoggingPayloadProcessor();
+        registeredProcessors.put(logger.getName(), logger);
+    }
+
+    private PayloadProcessor payloadProcessor;
+
+    public static final String PAYLOAD_PROCESSORS = "PAYLOAD_PROCESSORS";
+
+    {
+        String payloadProcessorsDefinitions = System.getenv(PAYLOAD_PROCESSORS);
+        List<PayloadProcessor> payloadProcessors = new ArrayList<>();
+        if (payloadProcessorsDefinitions != null) {
+            for (String processorDefinition : payloadProcessorsDefinitions.split(" ")) {
+                URI uri = URI.create(processorDefinition);
+                String processorName = uri.getScheme();
+                PayloadProcessor processor = registeredProcessors.get(processorName);
+                if (processor != null) {
+                    String modelId = uri.getAuthority();
+                    String method = uri.getQuery();
+                    MatchingPayloadProcessor p = new MatchingPayloadProcessor(processor, method, modelId);
+                    payloadProcessors.add(p);
+                    logger.info("Added PayloadProcessor {}", p.getName());
+                }
+            }
+        }
+        payloadProcessor = new AsyncPayloadProcessor(new CompositePayloadProcessor(payloadProcessors));
     }
 
     /* ---------------------------------- initialization --------------------------------------------------------- */
@@ -3389,6 +3427,9 @@ public abstract class ModelMesh extends ThriftService
         final String threadNameBefore = setThreadName(curThread, "invoke-" + hopType + '-' + modelId);
         ModelRecord mr = null;
         try {
+            //System.err.println("***");
+            //System.err.println("persisting "+Arrays.toString(args));
+            //System.err.println("***");
             String destId = contextMap.get(DEST_INST_ID_KEY);
             if (destId != null) {
                 // make sure destination id doesn't flow to any downstream reqs
@@ -3400,7 +3441,9 @@ public abstract class ModelMesh extends ThriftService
                 if (!instanceId.equals(destId)) {
                     if (directClient != null) {
                         logger.info("Forwarding mis-directed request for model " + modelId + " to inst " + destId);
-                        return forwardInvokeModel(destId, modelId, remoteMeth, args);
+                        Object outcome = forwardInvokeModel(destId, modelId, remoteMeth, args);
+                        payloadProcessor.process(new Payload(modelId, null, remoteMeth, args, outcome));
+                        return outcome;
                     }
                     logger.warn("Received invokeModel request with incorrect dest inst id: " + destId + " (we are "
                                 + instanceId + ")");
@@ -3570,6 +3613,7 @@ public abstract class ModelMesh extends ThriftService
                                                  + filtered);
                                 }
                                 Object result = invokeRemote(runtimeClient, method, remoteMeth, modelId, args);
+                                payloadProcessor.process(new Payload(modelId, method, remoteMeth, args, result));
                                 return method == null && externalReq ? updateWithModelCopyInfo(result, mr) : result;
                             } catch (Exception e) {
                                 final Throwable t = e instanceof InvocationTargetException ? e.getCause() : e;
@@ -3647,6 +3691,7 @@ public abstract class ModelMesh extends ThriftService
                                 }
                                 try {
                                     Object result = invokeLocalModel(cacheEntry, method, args, modelId);
+                                    payloadProcessor.process(new Payload(modelId, method, remoteMeth, args, result));
                                     return method == null && externalReq ? updateWithModelCopyInfo(result, mr) : result;
                                 } finally {
                                     if (!favourSelfForHits) {
@@ -3741,6 +3786,7 @@ public abstract class ModelMesh extends ThriftService
                                 // this will throw ServiceUnavailableException (rather than actually making
                                 // any remote invocation) if the LB logic decides it should be loaded locally
                                 Object result = invokeRemote(cacheMissClient, method, remoteMeth, modelId, args);
+                                payloadProcessor.process(new Payload(modelId, method, remoteMeth, args, result));
                                 return method == null && externalReq ? updateWithModelCopyInfo(result, mr) : result;
                             } catch (Exception e) {
                                 final Throwable t = e instanceof InvocationTargetException ? e.getCause() : e;
@@ -3867,6 +3913,7 @@ public abstract class ModelMesh extends ThriftService
                         // invoke model
                         try {
                             Object result = invokeLocalModel(cacheEntry, method, args, modelId);
+                            payloadProcessor.process(new Payload(modelId, method, remoteMeth, args, result));
                             return method == null && externalReq ? updateWithModelCopyInfo(result, mr) : result;
                         } catch (ModelNotHereException e) {
                             if (loadTargetFilter != null) loadTargetFilter.remove(instanceId);
