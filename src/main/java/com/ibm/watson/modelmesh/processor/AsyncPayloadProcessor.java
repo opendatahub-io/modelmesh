@@ -20,7 +20,7 @@ public class AsyncPayloadProcessor implements PayloadProcessor {
             while ((p = payloads.poll()) != null) {
                 delegate.process(p);
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.MINUTES);
     }
 
     @Override
