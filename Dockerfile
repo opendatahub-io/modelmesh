@@ -32,7 +32,7 @@ RUN --mount=type=cache,target=/root/.cache/microdnf:rw \
     microdnf --setopt=cachedir=/root/.cache/microdnf --nodocs install -y \
        java-21-openjdk-devel \
        nss \
-    && microdnf update --nodocs \
+    && microdnf update -y --nodocs \
     && sed -i 's:security.provider.12=SunPKCS11:#security.provider.12=SunPKCS11:g' /usr/lib/jvm/java-21-openjdk-*/conf/security/java.security \
     && sed -i 's:#security.provider.1=SunPKCS11 ${java.home}/lib/security/nss.cfg:security.provider.12=SunPKCS11 ${java.home}/lib/security/nss.cfg:g' /usr/lib/jvm/java-21-openjdk-*/conf/security/java.security \
     && java -version \
@@ -96,7 +96,7 @@ RUN --mount=type=cache,target=/root/.cache/microdnf:rw \
     microdnf --setopt=cachedir=/root/.cache/microdnf --nodocs install -y \
        java-21-openjdk-headless \
        nss \
-    && microdnf update --nodocs \
+    && microdnf update -y --nodocs \
     && sed -i 's:security.provider.12=SunPKCS11:#security.provider.12=SunPKCS11:g' /usr/lib/jvm/java-21-openjdk-*/conf/security/java.security \
     && sed -i 's:#security.provider.1=SunPKCS11 ${java.home}/lib/security/nss.cfg:security.provider.12=SunPKCS11 ${java.home}/lib/security/nss.cfg:g' /usr/lib/jvm/java-21-openjdk-*/conf/security/java.security \
     && java -version \
