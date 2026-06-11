@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RemotePayloadProcessorTest {
 
+    @Test
     void testDestinationUnreachable() {
         assertThrows(IllegalArgumentException.class, () -> {
             new RemotePayloadProcessor(URI.create("http://this-does-not-exist:123"));
