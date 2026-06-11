@@ -135,9 +135,8 @@ public class RemotePayloadProcessor implements PayloadProcessor {
             }
 
         } catch (UnknownHostException e) {
-            // If the host can't be resolved, allow it to continue
-            // The actual HTTP request will fail later with a proper error
-            logger.warn("Unable to resolve host for SSRF validation: {}", host);
+            // Fail-closed: unresolvable hosts could be DNS rebinding attempts (CWE-367)
+            throw new IllegalArgumentException("URI host must resolve for SSRF validation: " + host, e);
         }
     }
 
