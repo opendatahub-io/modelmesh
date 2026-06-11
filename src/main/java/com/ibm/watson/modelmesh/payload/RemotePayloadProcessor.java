@@ -93,9 +93,8 @@ public class RemotePayloadProcessor implements PayloadProcessor {
             throw new IllegalArgumentException("URI cannot use octal IP encoding: " + host);
         }
 
-        // Try to resolve the host and perform additional validation
-        // Per OWASP SSRF Prevention: Check ALL resolved IPs to prevent DNS pinning attacks
-        // If the host can't be resolved, allow it to pass (the HTTP request will fail later)
+        // Resolve the host and validate all IPs against SSRF blocklists (OWASP SSRF Prevention).
+        // Fail-closed: unresolvable hosts are rejected to prevent DNS rebinding (CWE-367).
         try {
             InetAddress[] allAddresses = InetAddress.getAllByName(host);
 
