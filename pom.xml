@@ -58,7 +58,8 @@
     <jenkins-build-tag>${env.BUILD_TAG}</jenkins-build-tag>  <!-- set by jenkins -->
 
     <grpc-version>1.63.2</grpc-version>
-    <netty-version>4.1.135.Final</netty-version>
+    <!-- CVE-2026-56745: Netty Denial of Service via memory exhaustion in SPDY-to-HTTP codec, fixed in 4.1.136.Final -->
+    <netty-version>4.1.136.Final</netty-version>
     <litelinks-version>1.7.2</litelinks-version>
     <kv-utils-version>0.5.1</kv-utils-version>
     <etcd-java-version>0.0.24</etcd-java-version>
