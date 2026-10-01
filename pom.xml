@@ -67,7 +67,7 @@
     <protobuf-version>3.25.5</protobuf-version>
     <annotation-version>9.0.87</annotation-version>
     <guava-version>33.1.0-jre</guava-version>
-    <jackson-databind-version>2.18.8</jackson-databind-version>
+    <jackson-databind-version>2.18.10</jackson-databind-version>
     <gson-version>2.10.1</gson-version>
     <!-- CVE-2026-43869: Apache Thrift security bypass due to improper certificate validation fixed in 0.23.0 -->
     <!-- CVE-2026-45112: Apache Thrift Denial of Service due to uncontrolled resource allocation fixed in 0.24.0 -->
@@ -86,7 +86,7 @@
          since we have some custom optimized extensions to this -->
     <prometheus-version>0.9.0</prometheus-version>
 
-    <bouncycastle-version>1.84</bouncycastle-version>
+    <bouncycastle-version>1.85</bouncycastle-version>
     <junit-version>5.10.2</junit-version>
 
     <zookeeper-version>3.8.6</zookeeper-version>
