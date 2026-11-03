@@ -64,7 +64,7 @@
     <etcd-java-version>0.0.24</etcd-java-version>
     <protobuf-version>3.25.5</protobuf-version>
     <annotation-version>9.0.87</annotation-version>
-    <guava-version>33.1.0-jre</guava-version>
+    <guava-version>33.7.1-jre</guava-version>
     <jackson-databind-version>2.16.2</jackson-databind-version>
     <gson-version>2.10.1</gson-version>
     <thrift-version>0.20.0</thrift-version>
