@@ -66,14 +66,14 @@
     <etcd-java-version>0.0.24</etcd-java-version>
     <protobuf-version>3.25.5</protobuf-version>
     <annotation-version>9.0.87</annotation-version>
-    <guava-version>33.1.0-jre</guava-version>
-    <jackson-databind-version>2.18.11</jackson-databind-version>
+    <guava-version>33.7.2-jre</guava-version>
+    <jackson-databind-version>2.18.12</jackson-databind-version>
     <gson-version>2.10.1</gson-version>
     <!-- CVE-2026-43869: Apache Thrift security bypass due to improper certificate validation fixed in 0.23.0 -->
     <!-- CVE-2026-45112: Apache Thrift Denial of Service due to uncontrolled resource allocation fixed in 0.24.0 -->
-    <thrift-version>0.24.0</thrift-version>
+    <thrift-version>0.25.0</thrift-version>
     <!-- CVE-2026-54399: Apache HttpComponents Core DoS via excessive HTTP headers in HTTP/1.1 message parser,
-         fixed in httpcore5 5.4.3; both httpcore5 and httpcore5-h2 are direct runtime deps of libthrift 0.24.0 -->
+         fixed in httpcore5 5.4.3; both httpcore5 and httpcore5-h2 are direct runtime deps of libthrift 0.25.0 -->
     <httpclient5-version>5.6.4</httpclient5-version>
     <eclipse-collections-version>11.1.0</eclipse-collections-version>
     <log4j2-version>2.25.4</log4j2-version>
@@ -86,10 +86,10 @@
          since we have some custom optimized extensions to this -->
     <prometheus-version>0.9.0</prometheus-version>
 
-    <bouncycastle-version>1.85</bouncycastle-version>
+    <bouncycastle-version>1.87</bouncycastle-version>
     <junit-version>5.10.2</junit-version>
 
-    <zookeeper-version>3.8.6</zookeeper-version>
+    <zookeeper-version>3.8.8</zookeeper-version>
     <curator-version>5.3.0</curator-version>
 
     <dockerhome>${project.build.directory}/dockerhome</dockerhome>
@@ -334,7 +334,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- CVE-2026-54399: pin httpcore5 direct runtime dep of libthrift 0.24.0 to fixed version -->
+    <!-- CVE-2026-54399: pin httpcore5 direct runtime dep of libthrift 0.25.0 to fixed version -->
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
